@@ -109,21 +109,27 @@ export const GameTile: React.FC<GameTileProps> = ({ property, onClick, players }
           )}
         </div>
 
-        {/* Players on this tile */}
+        {/* Players on this tile - Enhanced visibility */}
         {players.length > 0 && (
-          <div className="absolute bottom-1 right-1 flex flex-wrap gap-1">
+          <div className="absolute -bottom-1 -right-1 flex flex-wrap gap-0.5 z-20">
             {players.map((player, index) => (
               <div 
                 key={player.id}
-                className="w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-xs player-token"
-                style={{ backgroundColor: player.color }}
-                title={player.name}
+                className="w-6 h-6 rounded-full border-2 border-background flex items-center justify-center text-sm player-token shadow-lg"
+                style={{ 
+                  backgroundColor: player.color,
+                  transform: `translate(${index * -10}px, ${index * -10}px)`,
+                  zIndex: 20 + index
+                }}
+                title={`${player.name} - ₹${player.money.toLocaleString()}`}
               >
-                {player.token === 'rocket' ? '🚀' : 
-                 player.token === 'elephant' ? '🐘' : 
-                 player.token === 'train' ? '🚄' : 
-                 player.token === 'rickshaw' ? '🛺' :
-                 player.token === 'lotus' ? '🪷' : '🐅'}
+                <span className="filter drop-shadow-sm">
+                  {player.token === 'rocket' ? '🚀' : 
+                   player.token === 'elephant' ? '🐘' : 
+                   player.token === 'train' ? '🚄' : 
+                   player.token === 'rickshaw' ? '🛺' :
+                   player.token === 'lotus' ? '🪷' : '🐅'}
+                </span>
               </div>
             ))}
           </div>

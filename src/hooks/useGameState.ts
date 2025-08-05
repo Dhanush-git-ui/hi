@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GameState, Player, Property } from '@/types/game';
 import { BOARD_PROPERTIES, PLAYER_TOKENS } from '@/data/gameData';
 import { toast } from 'sonner';
+import { socketService } from '@/services/socket';
 
 export const useGameState = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -16,50 +17,134 @@ export const useGameState = () => {
   });
 
   const [selectedTileId, setSelectedTileId] = useState<number | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [gameId, setGameId] = useState<string | null>(null);
 
-  const initializeGame = useCallback((playerNames: string[]) => {
-    const players: Player[] = playerNames.map((name, index) => ({
-      id: `player-${index}`,
-      name,
-      token: PLAYER_TOKENS[index].id as any,
-      position: 0,
-      money: 15000,
-      properties: [],
-      inJail: false,
-      jailTurns: 0,
-      isActive: true,
-      color: PLAYER_TOKENS[index].color
-    }));
+  // Initialize socket connection
+  useEffect(() => {
+    const socket = socketService.connect();
+    
+    socket.on('connect', () => {
+      setIsConnected(true);
+      console.log('Connected to server');
+    });
 
-    setGameState(prev => ({
-      ...prev,
-      players,
-      phase: 'rolling',
-      currentPlayerIndex: 0
-    }));
+    socket.on('disconnect', () => {
+      setIsConnected(false);
+      console.log('Disconnected from server');
+    });
 
-    toast.success('Game started! Roll the dice to begin.');
+    // Listen for game updates
+    socketService.onGameUpdate((updatedGameState: GameState) => {
+      setGameState(updatedGameState);
+    });
+
+    return () => {
+      socketService.disconnect();
+    };
   }, []);
 
-  const rollDice = useCallback(() => {
+  const createGame = useCallback(async (hostName: string) => {
+    try {
+      const { gameId: newGameId } = await socketService.createGame(hostName);
+      setGameId(newGameId);
+      toast.success(`Game created! Game ID: ${newGameId}`);
+      return newGameId;
+    } catch (error) {
+      toast.error('Failed to create game');
+      console.error('Create game error:', error);
+    }
+  }, []);
+
+  const joinGame = useCallback(async (gameId: string, playerName: string) => {
+    try {
+      const { gameState: newGameState } = await socketService.joinGame(gameId, playerName);
+      setGameState(newGameState);
+      setGameId(gameId);
+      toast.success('Joined game successfully!');
+    } catch (error) {
+      toast.error('Failed to join game');
+      console.error('Join game error:', error);
+    }
+  }, []);
+
+  const initializeGame = useCallback(async (playerNames: string[]) => {
+    if (!gameId) {
+      // Create local game for single player testing
+      const players: Player[] = playerNames.map((name, index) => ({
+        id: `player-${index}`,
+        name,
+        token: PLAYER_TOKENS[index].id as any,
+        position: 0,
+        money: 15000,
+        properties: [],
+        inJail: false,
+        jailTurns: 0,
+        isActive: true,
+        color: PLAYER_TOKENS[index].color
+      }));
+
+      setGameState(prev => ({
+        ...prev,
+        players,
+        phase: 'rolling',
+        currentPlayerIndex: 0
+      }));
+
+      toast.success('Game started! Roll the dice to begin.');
+      return;
+    }
+
+    try {
+      const newGameState = await socketService.startGame();
+      setGameState(newGameState);
+      toast.success('Multiplayer game started! Roll the dice to begin.');
+    } catch (error) {
+      toast.error('Failed to start game');
+      console.error('Start game error:', error);
+    }
+  }, [gameId]);
+
+  const rollDice = useCallback(async () => {
     if (gameState.phase !== 'rolling') return;
 
-    const newDice: [number, number] = [
-      Math.floor(Math.random() * 6) + 1,
-      Math.floor(Math.random() * 6) + 1
-    ];
+    if (gameId) {
+      // Multiplayer mode
+      try {
+        const newDice = await socketService.rollDice();
+        setGameState(prev => ({
+          ...prev,
+          dice: newDice,
+          phase: 'moving'
+        }));
 
-    setGameState(prev => ({
-      ...prev,
-      dice: newDice,
-      phase: 'moving'
-    }));
+        // Simulate player movement after dice roll
+        setTimeout(() => {
+          movePlayer(newDice[0] + newDice[1]);
+        }, 600);
+      } catch (error) {
+        toast.error('Failed to roll dice');
+        console.error('Roll dice error:', error);
+      }
+    } else {
+      // Local mode
+      const newDice: [number, number] = [
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1
+      ];
 
-    // Simulate player movement after dice roll
-    setTimeout(() => {
-      movePlayer(newDice[0] + newDice[1]);
-    }, 600);
-  }, [gameState.phase]);
+      setGameState(prev => ({
+        ...prev,
+        dice: newDice,
+        phase: 'moving'
+      }));
+
+      // Simulate player movement after dice roll
+      setTimeout(() => {
+        movePlayer(newDice[0] + newDice[1]);
+      }, 600);
+    }
+  }, [gameState.phase, gameId]);
 
   const movePlayer = useCallback((steps: number) => {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -241,6 +326,10 @@ export const useGameState = () => {
     canRollDice: gameState.phase === 'rolling',
     canBuyProperty: gameState.phase === 'action' && selectedTileId !== null && 
                    !gameState.properties[selectedTileId].owner &&
-                   gameState.properties[selectedTileId].type === 'property'
+                   gameState.properties[selectedTileId].type === 'property',
+    createGame,
+    joinGame,
+    isConnected,
+    gameId
   };
 };

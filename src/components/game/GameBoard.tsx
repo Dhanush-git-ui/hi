@@ -23,16 +23,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onRollDice,
   canRollDice
 }) => {
-  // Arrange tiles in board layout: 6 tiles per side
+  // Arrange tiles to match the monopoly board structure
+  // Bottom row (0-5): START, Maharashtra, Surprise, Tamil Nadu, Income Tax, Delhi Airport
   const bottomTiles = properties.slice(0, 6);
+  
+  // Left side (6-11): JAIL, Gujarat, Electric Board, Karnataka, Uttar Pradesh, Mumbai Airport  
   const leftTiles = properties.slice(6, 12);
+  
+  // Top row (12-17): VACATION, Telangana, Kerala, Treasure, West Bengal, Kolkata Airport
   const topTiles = properties.slice(12, 18).reverse();
+  
+  // Right side (18-23): GO TO JAIL, Punjab, Rajasthan, Water Board, Andhra Pradesh, Chennai Airport
   const rightTiles = properties.slice(18, 24).reverse();
 
   return (
-    <div className="relative w-full h-full min-h-[600px] game-board rounded-2xl p-4">
+    <div className="relative w-full h-full min-h-[800px] game-board rounded-2xl p-2">
       <div className="grid grid-cols-8 grid-rows-8 gap-1 h-full">
-        {/* Top-left corner */}
+        {/* Top-left corner - VACATION (12) */}
         <div className="col-span-1 row-span-1">
           <GameTile 
             property={properties[12]} 
@@ -41,8 +48,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           />
         </div>
         
-        {/* Top side */}
-        {topTiles.slice(1, 6).map((property, index) => (
+        {/* Top side - positions 13-17 */}
+        {topTiles.slice(1).map((property, index) => (
           <div key={property.id} className="col-span-1 row-span-1">
             <GameTile 
               property={property} 
@@ -52,7 +59,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           </div>
         ))}
         
-        {/* Top-right corner */}
+        {/* Top-right corner - GO TO JAIL (18) */}
         <div className="col-span-1 row-span-1">
           <GameTile 
             property={properties[18]} 
@@ -61,9 +68,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           />
         </div>
 
-        {/* Right side */}
+        {/* Right side - positions 19-23 */}
         {rightTiles.map((property, index) => (
-          <div key={property.id} className={`col-span-1 row-span-1 ${index === 0 ? 'col-start-8 row-start-2' : ''}`}>
+          <div key={property.id} className={`col-span-1 row-span-1 col-start-8 row-start-${index + 2}`}>
             <GameTile 
               property={property} 
               onClick={() => onTileClick(property.id)}
@@ -73,33 +80,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         ))}
 
         {/* Center area with dice and game info */}
-        <div className="col-span-6 row-span-6 col-start-2 row-start-2 flex flex-col items-center justify-center bg-glass rounded-xl p-6">
-          <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold text-neon mb-2">BHARAT BUSINESS</h1>
+        <div className="col-span-6 row-span-6 col-start-2 row-start-2 flex flex-col items-center justify-center bg-glass rounded-xl p-4">
+          <div className="text-center mb-4">
+            <h1 className="text-3xl font-bold text-neon mb-2">BHARAT BUSINESS</h1>
             <p className="text-lg text-gold">Indian States Monopoly</p>
           </div>
           
-          <div className="mb-6">
+          <div className="mb-4">
             <Dice dice={dice} onRoll={onRollDice} canRoll={canRollDice} />
           </div>
 
-          <div className="bg-card/50 rounded-lg p-4 text-center">
-            <h3 className="text-lg font-semibold mb-2 text-foreground">Current Player</h3>
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-2xl">{currentPlayer.token === 'rocket' ? '🚀' : 
-                                         currentPlayer.token === 'elephant' ? '🐘' : 
-                                         currentPlayer.token === 'train' ? '🚄' : 
-                                         currentPlayer.token === 'rickshaw' ? '🛺' :
-                                         currentPlayer.token === 'lotus' ? '🪷' : '🐅'}</span>
-              <span className="text-lg font-medium" style={{ color: currentPlayer.color }}>
-                {currentPlayer.name}
-              </span>
+          {currentPlayer && (
+            <div className="bg-card/50 rounded-lg p-3 text-center">
+              <h3 className="text-base font-semibold mb-2 text-foreground">Current Player</h3>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <PlayerToken player={currentPlayer} size="md" />
+                <span className="text-lg font-medium" style={{ color: currentPlayer.color }}>
+                  {currentPlayer.name}
+                </span>
+              </div>
+              <p className="text-gold font-semibold">₹{currentPlayer.money.toLocaleString()}</p>
             </div>
-            <p className="text-gold font-semibold mt-1">₹{currentPlayer.money.toLocaleString()}</p>
-          </div>
+          )}
         </div>
 
-        {/* Bottom-right corner */}
+        {/* Bottom-right corner - START (0) */}
         <div className="col-span-1 row-span-1 col-start-8 row-start-8">
           <GameTile 
             property={properties[0]} 
@@ -108,9 +113,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           />
         </div>
 
-        {/* Bottom side */}
-        {bottomTiles.slice(1, 6).reverse().map((property, index) => (
-          <div key={property.id} className="col-span-1 row-span-1 row-start-8">
+        {/* Bottom side - positions 1-5 reversed */}
+        {bottomTiles.slice(1).reverse().map((property, index) => (
+          <div key={property.id} className={`col-span-1 row-span-1 col-start-${7 - index} row-start-8`}>
             <GameTile 
               property={property} 
               onClick={() => onTileClick(property.id)}
@@ -119,7 +124,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           </div>
         ))}
 
-        {/* Bottom-left corner */}
+        {/* Bottom-left corner - JAIL (6) */}
         <div className="col-span-1 row-span-1 col-start-1 row-start-8">
           <GameTile 
             property={properties[6]} 
@@ -128,9 +133,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           />
         </div>
 
-        {/* Left side */}
-        {leftTiles.slice(1, 6).map((property, index) => (
-          <div key={property.id} className={`col-span-1 row-span-1 col-start-1 ${index === 0 ? 'row-start-7' : `row-start-${7 - index}`}`}>
+        {/* Left side - positions 7-11 */}
+        {leftTiles.slice(1).map((property, index) => (
+          <div key={property.id} className={`col-span-1 row-span-1 col-start-1 row-start-${7 - index}`}>
             <GameTile 
               property={property} 
               onClick={() => onTileClick(property.id)}
