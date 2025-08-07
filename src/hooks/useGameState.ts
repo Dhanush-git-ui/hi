@@ -147,6 +147,8 @@ export const useGameState = () => {
   }, [gameState.phase, gameId]);
 
   const movePlayer = useCallback((steps: number) => {
+    if (!gameState.players[gameState.currentPlayerIndex]) return;
+    
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     const newPosition = (currentPlayer.position + steps) % 24;
     
@@ -174,11 +176,15 @@ export const useGameState = () => {
 
     // Handle tile action
     const landedProperty = gameState.properties[newPosition];
-    handleTileAction(landedProperty);
+    if (landedProperty) {
+      handleTileAction(landedProperty);
+    }
   }, [gameState]);
 
   const handleTileAction = useCallback((property: Property) => {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    
+    if (!currentPlayer) return;
     
     switch (property.type) {
       case 'property':
@@ -200,6 +206,8 @@ export const useGameState = () => {
 
   const handleSpecialTile = useCallback((property: Property) => {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    
+    if (!currentPlayer) return;
     
     switch (property.name) {
       case 'Income Tax':

@@ -90,12 +90,12 @@ const Index = () => {
   if (!gameStarted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-card/20 to-background p-4">
-        <Card className="bg-glass p-8 max-w-md w-full border-neon-red/30">
+        <Card className="bg-card/50 backdrop-blur-sm p-8 max-w-md w-full border border-border/50">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-neon mb-2 animate-pulse">
+            <h1 className="text-4xl font-bold text-primary mb-2 animate-pulse">
               🏛️ BHARAT BUSINESS 🏛️
             </h1>
-            <p className="text-xl text-gold font-semibold">Indian States Monopoly</p>
+            <p className="text-xl text-yellow-500 font-semibold">Indian States Monopoly</p>
             <p className="text-sm mt-2 text-muted-foreground">
               Experience the rich culture and business opportunities of India
             </p>
@@ -118,7 +118,6 @@ const Index = () => {
                 variant={gameMode === 'local' ? 'default' : 'outline'}
                 onClick={() => setGameMode('local')}
                 size="sm"
-                className="btn-enhanced"
               >
                 <Users className="w-4 h-4 mr-1" />
                 Local
@@ -128,7 +127,6 @@ const Index = () => {
                 onClick={() => setGameMode('host')}
                 size="sm"
                 disabled={!isConnected}
-                className="btn-enhanced"
               >
                 <Globe className="w-4 h-4 mr-1" />
                 Host
@@ -138,7 +136,6 @@ const Index = () => {
                 onClick={() => setGameMode('join')}
                 size="sm"
                 disabled={!isConnected}
-                className="btn-enhanced"
               >
                 <UserPlus className="w-4 h-4 mr-1" />
                 Join
@@ -165,7 +162,6 @@ const Index = () => {
                       variant="destructive" 
                       size="sm" 
                       onClick={() => removePlayer(index)}
-                      className="btn-enhanced"
                     >
                       ×
                     </Button>
@@ -176,7 +172,7 @@ const Index = () => {
                 <Button 
                   variant="secondary" 
                   onClick={addPlayer} 
-                  className="w-full btn-enhanced"
+                  className="w-full"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Add Player
@@ -220,7 +216,7 @@ const Index = () => {
           
           <Button 
             onClick={handleStartGame} 
-            className="w-full neon-glow btn-enhanced text-lg py-3"
+            className="w-full text-lg py-3 bg-primary hover:bg-primary/90"
           >
             {gameMode === 'local' && '🎮 Start Local Game'}
             {gameMode === 'host' && '🌐 Create Game'}

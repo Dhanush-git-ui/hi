@@ -8,8 +8,9 @@ class SocketService {
   connect() {
     try {
       // For development, use localhost. In production, this would be your backend URL
-      this.socket = io('http://localhost:3001', {
-        autoConnect: false
+      this.socket = io('ws://localhost:3001', {
+        autoConnect: false,
+        transports: ['websocket', 'polling']
       });
       
       this.socket.connect();
@@ -20,7 +21,9 @@ class SocketService {
       return { 
         on: () => {}, 
         emit: () => {}, 
-        once: () => {} 
+        once: () => {},
+        connect: () => {},
+        disconnect: () => {}
       } as unknown as Socket;
     }
   }

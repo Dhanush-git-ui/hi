@@ -10,7 +10,7 @@ interface GameBoardProps {
   players: any[];
   currentPlayer: any;
   dice: [number, number];
-  onRoll: () => void;
+  onRollDice: () => void;
   canRollDice: boolean;
   onTileClick: (id: number) => void;
   onBuyProperty?: () => void;
@@ -23,7 +23,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   players,
   currentPlayer,
   dice,
-  onRoll,
+  onRollDice,
   canRollDice,
   onTileClick,
   onBuyProperty,
@@ -35,7 +35,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const handleRoll = () => {
     if (!canRollDice || isRolling) return;
     setIsRolling(true);
-    onRoll();
+    onRollDice();
     setTimeout(() => setIsRolling(false), 1000);
   };
 
@@ -228,7 +228,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
           {/* Enhanced Dice Section */}
           <div className="mb-6">
-            <Dice dice={dice} onRoll={handleRoll} canRoll={canRollDice} />
+            <Dice dice={dice} onRoll={onRollDice} canRoll={canRollDice} />
           </div>
 
           {/* Current Player Info */}
