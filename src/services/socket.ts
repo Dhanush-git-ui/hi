@@ -6,13 +6,23 @@ class SocketService {
   private gameId: string | null = null;
 
   connect() {
-    // For development, use localhost. In production, this would be your backend URL
-    this.socket = io('http://localhost:3001', {
-      autoConnect: false
-    });
-    
-    this.socket.connect();
-    return this.socket;
+    try {
+      // For development, use localhost. In production, this would be your backend URL
+      this.socket = io('http://localhost:3001', {
+        autoConnect: false
+      });
+      
+      this.socket.connect();
+      return this.socket;
+    } catch (error) {
+      console.error('Socket connection error:', error);
+      // Return a dummy socket to prevent app from crashing
+      return { 
+        on: () => {}, 
+        emit: () => {}, 
+        once: () => {} 
+      } as unknown as Socket;
+    }
   }
 
   disconnect() {

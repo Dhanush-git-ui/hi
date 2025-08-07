@@ -19,43 +19,98 @@ export const Dice: React.FC<DiceProps> = ({ dice, onRoll, canRoll }) => {
     
     setTimeout(() => {
       setIsRolling(false);
-    }, 600);
+    }, 1000);
   };
 
-  const getDiceFace = (value: number) => {
-    const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    return faces[value - 1] || '⚀';
+  const renderDiceFace = (value: number) => {
+    const dotPositions = {
+      1: ['center'],
+      2: ['top-left', 'bottom-right'],
+      3: ['top-left', 'center', 'bottom-right'],
+      4: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+      5: ['top-left', 'top-right', 'center', 'bottom-left', 'bottom-right'],
+      6: ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right']
+    };
+
+    const positions = dotPositions[value as keyof typeof dotPositions] || [];
+    
+    return (
+      <div className="dice-3d relative">
+        {positions.map((position, index) => (
+          <div
+            key={index}
+            className={`dice-dot ${position}`}
+            style={{
+              top: position.includes('top') ? '8px' : position.includes('bottom') ? '44px' : '26px',
+              left: position.includes('left') ? '8px' : position.includes('right') ? '44px' : '26px'
+            }}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="flex gap-3">
+    <div className="flex flex-col items-center gap-6">
+      {/* Red 3D Dice with White Dots */}
+      <div className="flex gap-4 perspective-1000">
         {dice.map((value, index) => (
-          <Card 
+          <div 
             key={index}
-            className={`w-16 h-16 flex items-center justify-center bg-card neon-border text-4xl ${
-              isRolling ? 'dice-animation' : ''
-            }`}
+            className={`dice-3d ${isRolling ? 'animate-spin' : ''} transition-all duration-500 hover:scale-110`}
+            style={{
+              transformStyle: 'preserve-3d',
+              boxShadow: isRolling 
+                ? '0 0 40px rgba(220, 38, 38, 0.8)' 
+                : '0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+            }}
           >
-            {getDiceFace(value)}
-          </Card>
+            {renderDiceFace(value)}
+          </div>
         ))}
       </div>
       
-      <div className="text-center">
-        <div className="text-2xl font-bold text-gold mb-2">
-          Total: {dice[0] + dice[1]}
+      {/* Enhanced Total Display */}
+      <div className="text-center space-y-3">
+        <div className="bg-gradient-to-r from-saffron to-green bg-clip-text">
+          <div className="text-4xl font-baloo font-bold text-transparent mb-1">
+            Total: {dice[0] + dice[1]}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {dice[0]} + {dice[1]}
+          </div>
         </div>
         
+        {/* Enhanced Roll Button */}
         <Button 
           onClick={handleRoll}
           disabled={!canRoll || isRolling}
           variant="default"
-          className="neon-glow font-semibold"
+          className={`font-baloo font-bold text-xl py-6 px-12 transition-all duration-300 
+            ${isRolling ? 'animate-pulse bg-destructive' : 'hover:scale-105'}
+            bg-gradient-to-r from-saffron to-green hover:from-green hover:to-saffron text-white`}
+          size="lg"
         >
-          {isRolling ? 'Rolling...' : 'Roll Dice'}
+          {isRolling ? (
+            <div className="flex items-center gap-3">
+              <div className="animate-spin text-2xl">🎲</div>
+              <span>Rolling...</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🎲</span>
+              <span>Roll Dice</span>
+            </div>
+          )}
         </Button>
       </div>
+
+      {/* Dice Roll Sound Effect Indicator */}
+      {isRolling && (
+        <div className="text-center text-sm text-muted-foreground animate-pulse">
+          🔊 Rolling with sound effects...
+        </div>
+      )}
     </div>
   );
 };
